@@ -1,0 +1,702 @@
+import React, { Fragment, useState, useEffect, useRef } from "react";
+
+//Librerias
+import { format, parseISO } from "date-fns";
+import validator from "validator";
+
+//Componentes de Mui
+import {
+    Box,
+    Collapse,
+    Grid,
+    IconButton,
+    Paper,
+    Tooltip,
+    Typography,
+} from "@mui/material";
+
+//Iconos
+import {
+    ExpandLess as ExpandLessIcon,
+    ExpandMore as ExpandMoreIcon,
+    Edit as EditIcon,
+    Print as PrintIcon,
+    CheckCircle as CheckCircleIcon,
+    RemoveRedEye as RemoveRedEyeIcon,
+} from "@mui/icons-material";
+
+import Loader from "../../../../../../common/components/Loader";
+import ErrorPage from "../../../../../../common/components/Error";
+import useGetDiagnHumano from "../../../../hooks/useGetDiagnHumano";
+import ModalEditDiag from "./modalEdit";
+import ModalPDF from "./modalPDF";
+import ModalFinish from "./modalFinish";
+import { Can } from "../../../../../../common/functions/can";
+
+const ResumenHumanas = ({ onChangeRoute, intIdIdea, intIdDiagnostico }) => {
+    //===============================================================================================================================================
+    //========================================== Declaracion de estados =============================================================================
+    //===============================================================================================================================================
+    const [data, setData] = useState({
+        objInfoGeneral: [
+            {
+                parent: "dtmFechaSesion",
+                value: "",
+                label: "Fecha y hora de la sesión",
+            },
+            {
+                parent: "strLugarSesion",
+                value: "",
+                label: "Lugar de la sesión",
+            },
+            {
+                parent: "dtmActualizacion",
+                value: null,
+                label: "Fecha de ultima actualización",
+            },
+            {
+                parent: "strUsuarioResponsable",
+                value: "",
+                label: "Responsable del diagnóstico",
+            },
+            {
+                parent: "strUsuarioActualizacion",
+                value: "",
+                label: "Responsable de actualizar la información",
+            },
+        ],
+        objInfoEncuestaHumanas: [
+            {
+                parent: "strMotivaciones",
+                value: "",
+                label: "¿Cuál es tú principal motivación para emprender?",
+            },
+            {
+                parent: "strHabilidadesAutonomia",
+                value: "",
+                label: "Autonomía para el manejo de su negocio",
+            },
+            {
+                parent: "strHabilidadesCapacidad",
+                value: "",
+                label: "Capacidad de adaptarse a los cambios",
+            },
+            {
+                parent: "strHabilidadesCreatividad",
+                value: "",
+                label: "Creatividad en productos y en procesos productivos",
+            },
+            {
+                parent: "strHabilidadesComunicacion",
+                value: "",
+                label: "Comunicación efectiva con los clientes, con los empleados, los proveedores",
+            },
+            {
+                parent: "strTomaDesiciones",
+                value: "",
+                label: "¿Cómo se siente al momento de tomar las decisiones en su emprendimiento?",
+            },
+            {
+                parent: "strConfianza",
+                value: "",
+                label: "De acuerdo con las experiencias y el conocimiento adquirido en su actuar empresarial, en la siguiente escala en qué nivel confianza se ubicaría",
+            },
+            {
+                parent: "strRedesApoyoPropia",
+                value: "",
+                label: "Evalúe su capacidad, su actitud para crear redes",
+            },
+            {
+                parent: "strRedesApoyoOtros",
+                value: "",
+                label: "¿En quiénes usted ha encontrado apoyo para salir adelante con su emprendimiento?",
+            },
+            {
+                parent: "strProyectoVidaEmpresa",
+                value: "",
+                label: "¿En su momento actual de desarrollo, cuánto diría que su empresa se ha convertido en su proyecto de vida?",
+            },
+            {
+                parent: "strProyectoVidaEmprendimiento",
+                value: "",
+                label: "Consideras que el emprendimiento, te permite cumplir tus aspiraciones y proyectos",
+            },
+            {
+                parent: "strNivelVida",
+                value: "",
+                label: "¿Desde que inició su empresa hasta hoy, cuánto ha influido en el nivel de vida de su familia(ingresos, salud, educación…)",
+            },
+            {
+                parent: "strEquilibrioVida",
+                value: "",
+                label: "Seleccione las actividades que en tú rutina realizas para el descanso y esparcimiento",
+            },
+            // {
+            //     parent: "strActividadesDisminuyenActProductiva",
+            //     value: "",
+            //     label: "¿Cuáles son las tareas de cuidado que disminuyen el tiempo para dedicarse a su actividad productiva de manera continua?",
+            // },
+            // {
+            //     parent: "strSituacionesDesistirEmprendimiento",
+            //     value: "",
+            //     label: "¿Cuáles son las situaciones que te podrían llevar a desistir del emprendimiento?",
+            // },
+        ],
+        objInfoAdicional: [
+            {
+                parent: "strObservaciones",
+                value: "",
+                label: "Conclusiones y observaciones",
+            },
+        ],
+    });
+
+    const [loadingGetData, setLoadingGetData] = useState(false);
+
+    const [errorGetData, setErrorGetData] = useState({
+        flag: false,
+        msg: "",
+    });
+
+    const [openModalEdit, setOpenModalEdit] = useState(false);
+    const [openModalFinish, setOpenModalFinish] = useState(false);
+    const [finalizado, setFinalizado] = useState(false);
+
+    const [openModalPDF, setOpenModalPDF] = useState(false);
+
+    const [openCollapseInfoGeneral, setOpenCollapseInfoGeneral] =
+        useState(true);
+
+    const [openCollapseConclusiones, setOpenCollapseConclusiones] =
+        useState(true);
+
+    const [
+        openCollapseInfoEncuestaHumanas,
+        setOpenCollapseInfoEncuestaHumanas,
+    ] = useState(true);
+
+    //===============================================================================================================================================
+    //========================================== Hooks personalizados ===============================================================================
+    //===============================================================================================================================================
+    const { getUniqueData } = useGetDiagnHumano({
+        autoLoad: false,
+        intIdDiagnostico,
+    });
+
+    const refFntGetData = useRef(getUniqueData);
+
+    //===============================================================================================================================================
+    //========================================== Funciones ==========================================================================================
+    //===============================================================================================================================================
+    const handlerChangeOpenModalEdit = () => {
+        setOpenModalEdit(!openModalEdit);
+    };
+
+    const handlerChangeOpenModalFinish = () => {
+        setOpenModalFinish(!openModalFinish);
+    };
+
+    const handlerChangeOpenCollapseConclusiones = () => {
+        setOpenCollapseConclusiones(!openCollapseConclusiones);
+    };
+
+    async function getData() {
+        await refFntGetData
+            .current({ intIdDiagnostico })
+            .then((res) => {
+                if (res.data.error) {
+                    throw new Error(res.data.msg);
+                }
+
+                if (res.data) {
+                    let data = res.data.data[0];
+
+                    setFinalizado(data.objInfoGeneral.btFinalizado);
+
+                    const objInfoGeneral = {
+                        dtmFechaSesion: data.objInfoGeneral.dtmFechaSesion
+                            ? parseISO(data.objInfoGeneral.dtmFechaSesion)
+                            : null,
+                        strLugarSesion:
+                            data.objInfoGeneral.strLugarSesion || "",
+                        strUsuarioCreacion:
+                            data.objInfoGeneral.strUsuarioCreacion || "",
+                        dtmActualizacion: data.objInfoGeneral.dtmActualizacion
+                            ? parseISO(data.objInfoGeneral.dtmActualizacion)
+                            : null,
+                        strUsuarioActualizacion:
+                            data.objInfoGeneral.strUsuarioActualizacion || "",
+                        strUsuarioResponsable:
+                            data.objInfoGeneral.strUsuarioResponsable || "",
+                    };
+
+                    const objInfoEncuestaHumanas = data.objInfoEncuestaHumanas;
+
+                    const objInfoAdicional = data.objInfoAdicional;
+
+                    setData((prevState) => {
+                        let prevInfoGeneral = prevState.objInfoGeneral;
+                        let prevInfoEncuestaHumanas =
+                            prevState.objInfoEncuestaHumanas;
+                        let prevInfoAdicional = prevState.objInfoAdicional;
+
+                        for (const key in objInfoGeneral) {
+                            if (
+                                Object.hasOwnProperty.call(objInfoGeneral, key)
+                            ) {
+                                prevInfoGeneral.forEach((e) => {
+                                    if (e.parent === key) {
+                                        e.value = objInfoGeneral[key];
+
+                                        if (key === "dtmActualizacion") {
+                                            e.value = validator.isDate(e.value)
+                                                ? format(
+                                                      e.value,
+                                                      "yyyy-MM-dd H:mm"
+                                                  )
+                                                : "No diligenciado";
+                                        }
+
+                                        if (key === "dtmFechaSesion") {
+                                            e.value = validator.isDate(e.value)
+                                                ? format(
+                                                      e.value,
+                                                      "yyyy-MM-dd H:mm"
+                                                  )
+                                                : "No diligenciado";
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        for (const key in objInfoEncuestaHumanas) {
+                            if (
+                                Object.hasOwnProperty.call(
+                                    objInfoEncuestaHumanas,
+                                    key
+                                )
+                            ) {
+                                prevInfoEncuestaHumanas.forEach((e) => {
+                                    if (e.parent === key) {
+                                        if (objInfoEncuestaHumanas[key].map) {
+                                            const json =
+                                                objInfoEncuestaHumanas[key];
+
+                                            const str = json
+                                                .map((x) => {
+                                                    if (x.strCodigoRetorno) {
+                                                        return x.strCodigoRetorno;
+                                                    }
+
+                                                    if (x.label && x.value) {
+                                                        return `${x.label}:${x.value}`;
+                                                    }
+
+                                                    if (x.label) {
+                                                        return x.label;
+                                                    }
+
+                                                    return "";
+                                                })
+                                                .join(", ");
+                                            e.value = str;
+                                        } else {
+                                            e.value =
+                                                objInfoEncuestaHumanas[key];
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        for (const key in objInfoAdicional) {
+                            if (
+                                Object.hasOwnProperty.call(
+                                    objInfoAdicional,
+                                    key
+                                )
+                            ) {
+                                prevInfoAdicional.forEach((e) => {
+                                    if (e.parent === key) {
+                                        if (objInfoAdicional[key]?.map) {
+                                            const json = objInfoAdicional[key];
+
+                                            const str = json
+                                                .map((x) => {
+                                                    if (x.strCodigoRetorno) {
+                                                        return x.strCodigoRetorno;
+                                                    }
+
+                                                    if (x.label && x.value) {
+                                                        return `${x.label}:${x.value}`;
+                                                    }
+
+                                                    if (x.label) {
+                                                        return x.label;
+                                                    }
+
+                                                    return "";
+                                                })
+                                                .join(", ");
+                                            e.value = str;
+                                        } else {
+                                            e.value = objInfoAdicional[key];
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        return {
+                            ...prevState,
+                            objInfoGeneral: prevInfoGeneral,
+                            objInfoAdicional: prevInfoAdicional,
+                            objInfoEncuestaHumanas: prevInfoEncuestaHumanas,
+                        };
+                    });
+                }
+
+                setLoadingGetData(false);
+                setErrorGetData({ flag: false, msg: "" });
+            })
+            .catch((error) => {
+                setErrorGetData({ flag: true, msg: error.message });
+                setLoadingGetData(false);
+            });
+    }
+
+    const handlerChangeOpenModalPDF = () => {
+        setOpenModalPDF(!openModalPDF);
+    };
+
+    const handlerChangeOpenCollapseInfoGeneral = () => {
+        setOpenCollapseInfoGeneral(!openCollapseInfoGeneral);
+    };
+
+    const handlerChangeOpenCollapseInfoEncuestaHumanas = () => {
+        setOpenCollapseInfoEncuestaHumanas(!openCollapseInfoEncuestaHumanas);
+    };
+
+    //===============================================================================================================================================
+    //========================================== useEffects =========================================================================================
+    //===============================================================================================================================================
+    useEffect(() => {
+        if (intIdIdea) {
+            setLoadingGetData(true);
+            getData();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [intIdIdea, intIdDiagnostico]);
+
+    //===============================================================================================================================================
+    //========================================== Renders ============================================================================================
+    //===============================================================================================================================================
+
+    if (loadingGetData) {
+        return <Loader />;
+    }
+
+    if (errorGetData.flag) {
+        return (
+            <ErrorPage
+                severity="error"
+                msg="Ha ocurrido un error al obtener los datos del empresario seleccionado, por favor escala al área de TI para más información."
+                title={errorGetData.msg}
+            />
+        );
+    }
+
+    return (
+        <Fragment>
+            <ModalEditDiag
+                handleOpenDialog={handlerChangeOpenModalEdit}
+                open={openModalEdit}
+                onChangeRoute={onChangeRoute}
+                intIdIdea={intIdIdea}
+                intIdDiagnostico={intIdDiagnostico}
+            />
+
+            <ModalFinish
+                handleOpenDialog={handlerChangeOpenModalFinish}
+                open={openModalFinish}
+                onChangeRoute={onChangeRoute}
+                intIdIdea={intIdIdea}
+                intIdDiagnostico={intIdDiagnostico}
+                refresh={getData}
+            />
+
+            <ModalPDF
+                handleOpenDialog={handlerChangeOpenModalPDF}
+                open={openModalPDF}
+                values={data}
+                intIdIdea={intIdIdea}
+                intIdDiagnostico={intIdDiagnostico}
+            />
+
+            <Grid container direction="row" spacing={2}>
+                <Grid item xs={12}>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                        }}
+                    >
+                        <Box sx={{ flexGrow: 1 }}></Box>
+
+                        <Box>
+                            <Tooltip title="Finalizar diagnóstico">
+                                <IconButton
+                                    color="error"
+                                    disabled={finalizado}
+                                    onClick={() =>
+                                        handlerChangeOpenModalFinish()
+                                    }
+                                >
+                                    <CheckCircleIcon />
+                                </IconButton>
+                            </Tooltip>
+
+                            <Can I="edit" a="Diag">
+                                <Tooltip title="Editar diagnóstico">
+                                    <IconButton
+                                        color="success"
+                                        disabled={finalizado}
+                                        onClick={() =>
+                                            handlerChangeOpenModalEdit()
+                                        }
+                                    >
+                                        <EditIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            </Can>
+
+                            <Tooltip title="Imprimir diagnóstico">
+                                <IconButton
+                                    color="inherit"
+                                    onClick={() => handlerChangeOpenModalPDF()}
+                                >
+                                    <PrintIcon />
+                                </IconButton>
+                            </Tooltip>
+                            {finalizado ? (
+                                <Tooltip title="Previsualizar diagnóstico">
+                                    <IconButton
+                                        color="inherit"
+                                        onClick={() =>
+                                            onChangeRoute(
+                                                "DiagEmpresarialHumPrev",
+                                                {
+                                                    intIdIdea,
+                                                    intIdDiagnostico,
+                                                    isPreview: true,
+                                                }
+                                            )
+                                        }
+                                    >
+                                        <RemoveRedEyeIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            ) : null}
+                        </Box>
+                    </Box>
+                </Grid>
+
+                <Grid item xs={12}>
+                    <Typography
+                        sx={{ color: "#F5B335", textTransform: "uppercase" }}
+                        textAlign="center"
+                    >
+                        <b>detalle diagnóstico de competencias humanas</b>
+                    </Typography>
+                </Grid>
+
+                <Grid item xs={12}>
+                    <Paper sx={{ padding: "10px" }}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Box sx={{ flexGrow: 1 }}>
+                                <Typography sx={{ color: "#00BBB4" }}>
+                                    <b>Información general</b>
+                                </Typography>
+                            </Box>
+
+                            <Box>
+                                <IconButton
+                                    onClick={() =>
+                                        handlerChangeOpenCollapseInfoGeneral()
+                                    }
+                                    size="large"
+                                >
+                                    <Tooltip
+                                        title={
+                                            openCollapseInfoGeneral
+                                                ? "Contraer detalle"
+                                                : "Expandir detalle"
+                                        }
+                                    >
+                                        {openCollapseInfoGeneral ? (
+                                            <ExpandLessIcon />
+                                        ) : (
+                                            <ExpandMoreIcon />
+                                        )}
+                                    </Tooltip>
+                                </IconButton>
+                            </Box>
+                        </Box>
+
+                        <Collapse in={openCollapseInfoGeneral} timeout="auto">
+                            <Grid
+                                container
+                                direction="row"
+                                spacing={0}
+                                sx={{ padding: "15px" }}
+                            >
+                                {data.objInfoGeneral.map((e, i) => (
+                                    <Grid item xs={12} md={6} key={i}>
+                                        <p
+                                            style={{
+                                                margin: "0px",
+                                                fontSize: "13px",
+                                                alignContent: "center",
+                                            }}
+                                        >
+                                            <b style={{ marginRight: "5px" }}>
+                                                {e.label}:{" "}
+                                            </b>
+                                            {e.value || "No diligenciado"}
+                                        </p>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Collapse>
+                    </Paper>
+                </Grid>
+
+                <Grid item xs={12}>
+                    <Paper sx={{ padding: "10px" }}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Box sx={{ flexGrow: 1 }}>
+                                <Typography sx={{ color: "#00BBB4" }}>
+                                    <b>Componente humano</b>
+                                </Typography>
+                            </Box>
+
+                            <Box>
+                                <IconButton
+                                    onClick={() =>
+                                        handlerChangeOpenCollapseInfoEncuestaHumanas()
+                                    }
+                                    size="large"
+                                >
+                                    <Tooltip
+                                        title={
+                                            openCollapseInfoEncuestaHumanas
+                                                ? "Contraer detalle"
+                                                : "Expandir detalle"
+                                        }
+                                    >
+                                        {openCollapseInfoEncuestaHumanas ? (
+                                            <ExpandLessIcon />
+                                        ) : (
+                                            <ExpandMoreIcon />
+                                        )}
+                                    </Tooltip>
+                                </IconButton>
+                            </Box>
+                        </Box>
+
+                        <Collapse
+                            in={openCollapseInfoEncuestaHumanas}
+                            timeout="auto"
+                        >
+                            <Grid
+                                container
+                                direction="row"
+                                spacing={0}
+                                sx={{ padding: "15px" }}
+                            >
+                                {data.objInfoEncuestaHumanas.map((e, i) => (
+                                    <Grid item xs={12} md={12} key={i}>
+                                        <p
+                                            style={{
+                                                margin: "0px",
+                                                fontSize: "13px",
+                                                alignContent: "center",
+                                            }}
+                                        >
+                                            <b style={{ marginRight: "5px" }}>
+                                                {e.label}:{" "}
+                                            </b>
+                                            {e.value || "No diligenciado"}
+                                        </p>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Collapse>
+                    </Paper>
+                </Grid>
+
+                <Grid id item xs={12}>
+                    <Paper sx={{ padding: "10px" }}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Box sx={{ flexGrow: 1 }}>
+                                <Typography sx={{ color: "#00BBB4" }}>
+                                    <b>Conclusiones y observaciones </b>
+                                </Typography>
+                            </Box>
+
+                            <Box>
+                                <IconButton
+                                    onClick={() =>
+                                        handlerChangeOpenCollapseConclusiones()
+                                    }
+                                    size="large"
+                                >
+                                    <Tooltip
+                                        title={
+                                            openCollapseConclusiones
+                                                ? "Contraer detalle"
+                                                : "Expandir detalle"
+                                        }
+                                    >
+                                        {openCollapseConclusiones ? (
+                                            <ExpandLessIcon />
+                                        ) : (
+                                            <ExpandMoreIcon />
+                                        )}
+                                    </Tooltip>
+                                </IconButton>
+                            </Box>
+                        </Box>
+
+                        <Collapse in={openCollapseConclusiones} timeout="auto">
+                            <Grid
+                                container
+                                direction="row"
+                                spacing={0}
+                                sx={{ padding: "15px" }}
+                            >
+                                {data.objInfoAdicional.map((e, i) => (
+                                    <Grid item xs={12} md={12} key={i}>
+                                        <p
+                                            style={{
+                                                margin: "0px",
+                                                fontSize: "13px",
+                                                alignContent: "center",
+                                            }}
+                                        >
+                                            {e.value || "No diligenciado"}
+                                        </p>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Collapse>
+                    </Paper>
+                </Grid>
+            </Grid>
+        </Fragment>
+    );
+};
+
+export default ResumenHumanas;

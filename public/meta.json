@@ -1,0 +1,12 @@
+{
+    "name": "Transforma",
+    "description": "Aplicativo de la corporación de la mujer",
+    "license": "ISC",
+    "openSourceProject": 0,
+    "governmentWideReuseProject": 0,
+    "tags": ["TI"],
+    "contact": {
+        "email": "scardonas@xelerica.com"
+    },
+    "version": "0.1.0"
+}

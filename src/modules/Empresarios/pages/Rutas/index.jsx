@@ -1,0 +1,680 @@
+import React, { Fragment, useContext, useState } from "react";
+
+//Hooks
+import useGetRutas from "../../hooks/useGetRutas";
+
+//Componentes de Material UI
+import { Grid, Box, Button } from "@mui/material";
+
+import {
+    ThemeProvider,
+    StyledEngineProvider,
+    createTheme,
+} from "@mui/material/styles";
+
+//Iconos
+import {
+    ViewColumn as ViewColumnIcon,
+    Edit as EditIcon,
+    Clear as ClearIcon,
+    DeleteOutline as DeleteOutlineIcon,
+    Search as SearchIcon,
+    SaveAlt as SaveAltIcon,
+    ArrowDownward as ArrowDownwardIcon,
+    ChevronLeft as ChevronLeftIcon,
+    ChevronRight as ChevronRightIcon,
+    FirstPage as FirstPageIcon,
+    LastPage as LastPageIcon,
+    Check as CheckIcon,
+    FilterList as FilterListIcon,
+    Remove as RemoveIcon,
+    AddBox as AddBoxIcon,
+    Delete as DeleteIcon,
+    Cancel as CancelIcon,
+    RemoveRedEye as RemoveRedEyeIcon,
+    PictureAsPdf as PictureAsPdfIcon,
+    PlayCircle as PlayCircleIcon,
+    MarkEmailRead as MarkEmailReadIcon,
+} from "@mui/icons-material";
+
+//Table Material UI
+import MaterialTable from "@material-table/core";
+import { MTableToolbar } from "@material-table/core";
+
+//Componentes
+import ModalDelete from "./components/modalDelete";
+import ModalPDF from "./components/modalPDF";
+import ModalActiveRuta from "./components/modalActiveRuta";
+import ModalSendRuta from "./components/modalSendRuta";
+import { AbilityContext, Can } from "../../../../common/functions/can";
+import ModalCancel from "./components/modalCancelacion";
+
+const ReadRutas = ({ onChangeRoute, intIdIdea, openModalCreate }) => {
+    //===============================================================================================================================================
+    //========================================== Declaracion de estados =============================================================================
+    //===============================================================================================================================================
+    const [objColumnsRutas] = useState([
+        {
+            title: "Estado",
+            field: "objInfoPrincipal.strEstadoRuta",
+            width: "5%",
+        },
+        {
+            title: "Nombre",
+            field: "objInfoPrincipal.strNombre",
+            type: "string",
+        },
+        {
+            title: "Valor Total",
+            field: "objInfoPrincipal.valorTotalRuta",
+            type: "string",
+        },
+        {
+            title: "Total Fases",
+            render: (rowData) => {
+                let intFases = rowData.arrInfoFases?.length;
+
+                return <p>{intFases?.toString()}</p>;
+            },
+        },
+        {
+            title: "Fecha Creación",
+            field: "objInfoPrincipal.dtmCreacion",
+            type: "date",
+        },
+        {
+            title: "Responsable",
+            render: (rowData) => {
+                let strResponsables = rowData?.objInfoPrincipal?.strResponsable;
+
+                return <p>{strResponsables?.strNombre}</p>;
+            },
+        },
+    ]);
+
+    const [openModalDeleteRuta, setopenModalDeleteRuta] = useState(false);
+    const [openModalCancelRuta, setopenModalCancelRuta] = useState(false);
+    const [openModalPDF, setopenModalPDF] = useState(false);
+    const [openModalActiveRuta, setopenModalActiveRuta] = useState(false);
+    const [openModalSendRutas, setopenModalSendRuta] = useState(false);
+    const [selectedDataRuta, setselectedDataRuta] = useState();
+    //===============================================================================================================================================
+    //========================================== Hooks personalizados ===============================================================================
+    //===============================================================================================================================================
+    const { data: dataRutas, refreshGetData: refreshGetDataRutas } =
+        useGetRutas({
+            autoload: true,
+            intIdIdea: intIdIdea,
+        });
+
+    //===============================================================================================================================================
+    //========================================== Funciones ==========================================================================================
+    //===============================================================================================================================================
+    const handleropenModalDeleteRuta = () => {
+        setopenModalDeleteRuta(!openModalDeleteRuta);
+    };
+
+    const handleropenModalCancelRuta = () => {
+        setopenModalCancelRuta(!openModalCancelRuta);
+    };
+
+    const handleropenModalPDF = () => {
+        setopenModalPDF(!openModalPDF);
+    };
+
+    const handleropenModalActiveRuta = () => {
+        setopenModalActiveRuta(!openModalActiveRuta);
+    };
+
+    const handleropenModalSendRuta = () => {
+        setopenModalSendRuta(!openModalSendRutas);
+    };
+
+    const ability = useContext(AbilityContext);
+    //===============================================================================================================================================
+    //========================================== Renders ============================================================================================
+    //===============================================================================================================================================
+    return (
+        <Fragment>
+            <ModalDelete
+                handleOpenDialog={handleropenModalDeleteRuta}
+                open={openModalDeleteRuta}
+                intId={selectedDataRuta?.objInfoPrincipal?.intId}
+                refresh={refreshGetDataRutas}
+                intIdIdea={intIdIdea}
+            />
+
+            <ModalCancel
+                handleOpenDialog={handleropenModalCancelRuta}
+                open={openModalCancelRuta}
+                intId={selectedDataRuta?.objInfoPrincipal?.intId}
+                refresh={refreshGetDataRutas}
+                intIdIdea={intIdIdea}
+            />
+
+            <ModalPDF
+                handleOpenDialog={handleropenModalPDF}
+                open={openModalPDF}
+                intId={selectedDataRuta?.objInfoPrincipal?.intId}
+                intIdIdea={intIdIdea}
+            />
+
+            <ModalActiveRuta
+                handleOpenDialog={handleropenModalActiveRuta}
+                open={openModalActiveRuta}
+                values={selectedDataRuta}
+                refresh={refreshGetDataRutas}
+                intId={selectedDataRuta?.objInfoPrincipal?.intId}
+                intIdIdea={intIdIdea}
+            />
+
+            <ModalSendRuta
+                handleOpenDialog={handleropenModalSendRuta}
+                open={openModalSendRutas}
+                values={selectedDataRuta}
+                refresh={refreshGetDataRutas}
+                intId={selectedDataRuta?.objInfoPrincipal?.intId}
+                intIdIdea={intIdIdea}
+            />
+
+            <Grid container direction="row">
+                <Grid item xs={12}>
+                    <StyledEngineProvider injectFirst>
+                        <ThemeProvider
+                            theme={createTheme({
+                                palette: {
+                                    mode: "light",
+                                    primary: {
+                                        main: "#00BAB3",
+                                        dark: "#007c6a",
+                                        light: "#0288D1",
+                                        contrastText: "#ffff",
+                                    },
+                                    secondary: {
+                                        main: "#FF4160",
+                                    },
+                                    divider: "#BDBDBD",
+                                },
+                                typography: { fontSize: 13.2 },
+                                components: {
+                                    MuiTableBody: {
+                                        styleOverrides: {
+                                            root: {
+                                                fontSize: 13.2,
+                                            },
+                                        },
+                                    },
+                                    MuiTableCell: {
+                                        styleOverrides: {
+                                            root: {
+                                                padding: "5px",
+                                            },
+                                        },
+                                    },
+                                },
+                            })}
+                        >
+                            <MaterialTable
+                                icons={{
+                                    Add: AddBoxIcon,
+                                    Clear: ClearIcon,
+                                    Check: CheckIcon,
+                                    Delete: DeleteOutlineIcon,
+                                    Edit: EditIcon,
+                                    DetailPanel: ChevronRightIcon,
+                                    Export: SaveAltIcon,
+                                    Filter: FilterListIcon,
+                                    FirstPage: FirstPageIcon,
+                                    LastPage: LastPageIcon,
+                                    NextPage: ChevronRightIcon,
+                                    PreviousPage: ChevronLeftIcon,
+                                    Search: SearchIcon,
+                                    ResetSearch: ClearIcon,
+                                    SortArrow: ArrowDownwardIcon,
+                                    ThirdStateCheck: RemoveIcon,
+                                    ViewColumn: ViewColumnIcon,
+                                }}
+                                localization={{
+                                    pagination: {
+                                        labelRowsSelect: "filas",
+                                        labelDisplayedRows:
+                                            "{from}-{to} de {count}",
+                                        firstTooltip: "Primera página",
+                                        previousTooltip: "Página anterior",
+                                        nextTooltip: "Siguiente página",
+                                        lastTooltip: "Última página",
+                                        labelRowsPerPage: "Filas por página:",
+                                    },
+                                    toolbar: {
+                                        nRowsSelected:
+                                            "{0} filas seleccionadas",
+                                        searchTooltip: "Buscar",
+                                        searchPlaceholder: "Buscar",
+                                    },
+                                    header: {
+                                        actions: "Acciones",
+                                    },
+                                    body: {
+                                        emptyDataSourceMessage:
+                                            "No existe información por mostrar",
+                                        filterRow: {
+                                            filterTooltip: "Filtro",
+                                        },
+                                        editRow: {
+                                            deleteText:
+                                                "Esta seguro de eliminar el registro?",
+                                        },
+                                    },
+                                    selector: {
+                                        okLabel: "aceptar",
+                                        cancelLabel: "Cancelar",
+                                        clearLabel: "Clear",
+                                        todayLabel: "Hoy",
+                                    },
+                                    grouping: {
+                                        placeholder:
+                                            "Arrasta el nombre de la columna para agrupar los campos",
+                                        groupedBy: "Datos agrupados por: ",
+                                    },
+                                }}
+                                isLoading={
+                                    dataRutas === undefined ? true : false
+                                }
+                                data={dataRutas || []}
+                                columns={objColumnsRutas}
+                                title="Rutas"
+                                options={{
+                                    grouping: true,
+                                    title: true,
+                                    filtering: false,
+                                    search: ability.can("search", "Rutas"),
+                                    exportAllData: true,
+                                    columnsButton: true,
+                                    headerStyle: {
+                                        position: "sticky",
+                                        top: "0",
+                                        backgroundColor: "#cff3f2",
+                                        zIndex: 1,
+                                    },
+                                    detailPanelColumnStylele: {
+                                        fontSize: 12,
+                                    },
+                                    actionsColumnIndex: -1,
+                                    paging: true,
+                                    pageSizeOptions: [20, 100, 200, 500],
+                                    pageSize: 20,
+                                    maxBodyHeight: "520px",
+                                }}
+                                actions={[
+                                    (rowData) => {
+                                        if (ability.can("update", "Rutas")) {
+                                            return {
+                                                icon: () => (
+                                                    <EditIcon
+                                                        color={
+                                                            rowData
+                                                                .objInfoPrincipal
+                                                                ?.strEstadoRuta ===
+                                                                "Aceptada/En Proceso" ||
+                                                                rowData.objInfoPrincipal
+                                                                    ?.strEstadoRuta ===
+                                                                "Finalizada" ||
+                                                                rowData.objInfoPrincipal
+                                                                    ?.strEstadoRuta ===
+                                                                "Cancelada" ||
+                                                                rowData.objInfoPrincipal
+                                                                    ?.strTipoRuta ===
+                                                                "No planeada"
+                                                                ? "gray"
+                                                                : "success"
+                                                        }
+                                                        fontSize="small"
+                                                        onClick={() =>
+                                                            onChangeRoute(
+                                                                "EditRuta",
+                                                                {
+                                                                    intId: rowData
+                                                                        ?.objInfoPrincipal
+                                                                        ?.intId,
+                                                                    intIdIdea,
+                                                                    ...rowData,
+                                                                }
+                                                            )
+                                                        }
+                                                    />
+                                                ),
+                                                tooltip: "Editar",
+                                                disabled:
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "Aceptada/En Proceso" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "Finalizada" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "Cancelada" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strTipoRuta ===
+                                                    "No planeada",
+                                            };
+                                        }
+                                    },
+                                    (rowData) => {
+                                        return {
+                                            icon: () => (
+                                                <PictureAsPdfIcon
+                                                    htmlColor={
+                                                        rowData.btFinalizada ===
+                                                            true ||
+                                                            rowData.objInfoPrincipal
+                                                                ?.strEstadoRuta ===
+                                                            "Cancelada" ||
+                                                            rowData.objInfoPrincipal
+                                                                ?.strTipoRuta ===
+                                                            "No planeada"
+                                                            ? "gray"
+                                                            : "#ff6d07"
+                                                    }
+                                                    fontSize="small"
+                                                />
+                                            ),
+                                            onClick: (event, rowData) => {
+                                                setselectedDataRuta(rowData);
+                                                handleropenModalPDF();
+                                            },
+                                            tooltip: "Generar PDF",
+                                            disabled:
+                                                rowData.btFinalizada === true ||
+                                                rowData.objInfoPrincipal
+                                                    ?.strEstadoRuta ===
+                                                "Cancelada" ||
+                                                rowData.objInfoPrincipal
+                                                    ?.strTipoRuta ===
+                                                "No planeada",
+                                        };
+                                    },
+                                    (rowData) => {
+                                        if (ability.can("delete", "Rutas")) {
+                                            return {
+                                                icon: () => (
+                                                    <DeleteIcon
+                                                        color={
+                                                            rowData
+                                                                .objInfoPrincipal
+                                                                ?.strEstadoRuta ===
+                                                                "Aceptada/En Proceso" ||
+                                                                rowData
+                                                                    .objInfoPrincipal
+                                                                    ?.strEstadoRuta ===
+                                                                "Enviada" ||
+                                                                rowData.objInfoPrincipal
+                                                                    ?.strEstadoRuta ===
+                                                                "Finalizada" ||
+                                                                rowData.objInfoPrincipal
+                                                                    ?.strEstadoRuta ===
+                                                                "Cancelada" ||
+                                                                rowData.objInfoPrincipal
+                                                                    ?.strTipoRuta ===
+                                                                "No planeada"
+                                                                ? "gray"
+                                                                : "error"
+                                                        }
+                                                        fontSize="small"
+                                                    />
+                                                ),
+                                                onClick: (event, rowData) => {
+                                                    setselectedDataRuta(
+                                                        rowData
+                                                    );
+                                                    handleropenModalDeleteRuta();
+                                                },
+                                                tooltip: "Eliminar",
+                                                disabled:
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "Aceptada/En Proceso" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "Enviada" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "Finalizada" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "Cancelada" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strTipoRuta ===
+                                                    "No planeada",
+                                            };
+                                        }
+                                    },
+                                    (rowData) => {
+                                        if (ability.can("delete", "Rutas")) {
+                                            return {
+                                                icon: () => (
+                                                    <CancelIcon
+                                                        color={
+                                                            rowData.objInfoPrincipal
+                                                                ?.strEstadoRuta ===
+                                                                "En borrador" ||
+                                                                rowData.objInfoPrincipal
+                                                                    ?.strEstadoRuta ===
+                                                                "Finalizada" ||
+                                                                rowData.objInfoPrincipal
+                                                                    ?.strEstadoRuta ===
+                                                                "Cancelada" ||
+                                                                rowData.objInfoPrincipal
+                                                                    ?.strTipoRuta ===
+                                                                "No planeada"
+                                                                ? "gray"
+                                                                : "error"
+                                                        }
+                                                        fontSize="small"
+                                                    />
+                                                ),
+                                                onClick: (event, rowData) => {
+                                                    setselectedDataRuta(
+                                                        rowData
+                                                    );
+                                                    handleropenModalCancelRuta();
+                                                },
+                                                tooltip: "Cancelar",
+                                                disabled:
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "En borrador" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "Finalizada" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strEstadoRuta ===
+                                                    "Cancelada" ||
+                                                    rowData.objInfoPrincipal
+                                                        ?.strTipoRuta ===
+                                                    "No planeada",
+                                            };
+                                        }
+                                    },
+                                    (rowData) => {
+                                        return {
+                                            icon: () => (
+                                                <RemoveRedEyeIcon
+                                                    color="gray"
+                                                    fontSize="small"
+                                                />
+                                            ),
+                                            tooltip: "Previsualizar",
+                                            onClick: (event, rowData) => {
+                                                onChangeRoute("ViewRuta", {
+                                                    intId: rowData
+                                                        ?.objInfoPrincipal
+                                                        ?.intId,
+                                                    intIdIdea,
+                                                    ...rowData,
+                                                });
+                                            },
+                                        };
+                                    },
+                                    (rowData) => {
+                                        return {
+                                            icon: () => (
+                                                <PlayCircleIcon
+                                                    color={
+                                                        rowData.objInfoPrincipal
+                                                            ?.strEstadoRuta ===
+                                                            "Aceptada/En Proceso" ||
+                                                            rowData.objInfoPrincipal
+                                                                ?.strEstadoRuta ===
+                                                            "Finalizada" ||
+                                                            rowData.objInfoPrincipal
+                                                                ?.strEstadoRuta ===
+                                                            "Cancelada" ||
+                                                            rowData.objInfoPrincipal
+                                                                ?.strTipoRuta ===
+                                                            "No planeada"
+                                                            ? "gray"
+                                                            : "success"
+                                                    }
+                                                    fontSize="small"
+                                                />
+                                            ),
+                                            tooltip: "Aceptada/En Procesor",
+                                            disabled:
+                                                rowData.objInfoPrincipal
+                                                    ?.strEstadoRuta ===
+                                                "Aceptada/En Proceso" ||
+                                                rowData.objInfoPrincipal
+                                                    ?.strEstadoRuta ===
+                                                "Finalizada" ||
+                                                rowData.objInfoPrincipal
+                                                    ?.strEstadoRuta ===
+                                                "Cancelada" ||
+                                                rowData.objInfoPrincipal
+                                                    ?.strTipoRuta ===
+                                                "No planeada",
+                                            onClick: (event, rowData) => {
+                                                setselectedDataRuta(rowData);
+                                                handleropenModalActiveRuta();
+                                            },
+                                        };
+                                    },
+                                    (rowData) => {
+                                        return {
+                                            icon: () => (
+                                                <MarkEmailReadIcon
+                                                    htmlColor={
+                                                        rowData.objInfoPrincipal
+                                                            ?.strEstadoRuta ===
+                                                            "Aceptada/En Proceso" ||
+                                                            rowData.objInfoPrincipal
+                                                                ?.strEstadoRuta ===
+                                                            "Enviada" ||
+                                                            rowData.objInfoPrincipal
+                                                                ?.strEstadoRuta ===
+                                                            "Finalizada" ||
+                                                            rowData.objInfoPrincipal
+                                                                ?.strEstadoRuta ===
+                                                            "Cancelada" ||
+                                                            rowData.objInfoPrincipal
+                                                                ?.strTipoRuta ===
+                                                            "No planeada"
+                                                            ? "gray"
+                                                            : "#571845"
+                                                    }
+                                                    fontSize="small"
+                                                />
+                                            ),
+                                            tooltip: "Pasar a enviada",
+                                            disabled:
+                                                rowData.objInfoPrincipal
+                                                    ?.strEstadoRuta ===
+                                                "Aceptada/En Proceso" ||
+                                                rowData.objInfoPrincipal
+                                                    ?.strEstadoRuta ===
+                                                "Enviada" ||
+                                                rowData.objInfoPrincipal
+                                                    ?.strEstadoRuta ===
+                                                "Finalizada" ||
+                                                rowData.objInfoPrincipal
+                                                    ?.strEstadoRuta ===
+                                                "Cancelada" ||
+                                                rowData.objInfoPrincipal
+                                                    ?.strTipoRuta ===
+                                                "No planeada",
+                                            onClick: (event, rowData) => {
+                                                setselectedDataRuta(rowData);
+                                                handleropenModalSendRuta();
+                                            },
+                                        };
+                                    },
+                                ]}
+                                components={{
+                                    Toolbar: (props) => (
+                                        <div
+                                            style={{
+                                                paddingRight: "5px",
+                                                paddingLeft: "5px",
+                                            }}
+                                        >
+                                            <MTableToolbar {...props} />
+
+                                            <Grid container direction="row">
+                                                <Grid
+                                                    item
+                                                    xs={12}
+                                                    md={6}
+                                                ></Grid>
+
+                                                <Grid
+                                                    item
+                                                    xs={12}
+                                                    md={6}
+                                                    sx={{
+                                                        margin: "auto",
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            display: "flex",
+                                                            flexDirection:
+                                                                "row-reverse",
+                                                            marginBottom:
+                                                                "10px",
+                                                            gap: 1,
+                                                        }}
+                                                    >
+                                                        <Can
+                                                            I="create"
+                                                            a="Rutas"
+                                                        >
+                                                            <Button
+                                                                onClick={() =>
+                                                                    onChangeRoute(
+                                                                        "CreateRutas",
+                                                                        {
+                                                                            intIdIdea,
+                                                                        }
+                                                                    )
+                                                                }
+                                                                variant="contained"
+                                                            >
+                                                                Agregar ruta
+                                                            </Button>
+                                                        </Can>
+                                                    </Box>
+                                                </Grid>
+                                            </Grid>
+                                        </div>
+                                    ),
+                                }}
+                            />
+                        </ThemeProvider>
+                    </StyledEngineProvider>
+                </Grid>
+            </Grid>
+        </Fragment>
+    );
+};
+
+export default ReadRutas;
