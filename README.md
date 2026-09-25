@@ -14,7 +14,7 @@ TODO: Describe and show how to build your code and run the tests.
 # Para correr este proyecto desde cero en Local
 1. Correr el comando npm install.
 2. Correr el comando npm run start:local.
-3. En caso de que no se ejecute automáticamente, en una ventana de navegador digita http://localhost:3000
+3. En caso de que no se ejecute automáticamente, en una ventana de navegador digitar http://localhost:3000
 
 # Contribute
 TODO: Explain how other users and developers can contribute to make your code better. 
