@@ -447,6 +447,7 @@ const CUSesion = ({
                                                 slotProps={{
                                                     textField: {
                                                         name,
+                                                        required: true,
                                                         variant: "standard",
                                                         error: !!errors?.dtmFechaInicial,
                                                         helperText:

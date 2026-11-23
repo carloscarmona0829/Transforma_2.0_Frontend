@@ -449,6 +449,7 @@ const CURuta = ({ isEdit, intIdIdea, intIdAcompañamiento, onChangeRoute, isPrev
                                                 slotProps={{
                                                     textField: {
                                                         name,
+                                                        required: true,
                                                         variant: "standard",
                                                         error: !!errors?.dtmFechaInicio,
                                                         helperText:
