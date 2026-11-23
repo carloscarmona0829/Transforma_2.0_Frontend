@@ -65,6 +65,8 @@ const CUEventos = lazy(() =>
     import("../modules/Eventos/pages/Create&Edit/pageCUEvento")
 );
 
+const TestPrueba = lazy(() => import("../modules/TestPrueba/pages/TestPrueba"));
+
 const RoutesTransforma = ({ path }) => {
     //===============================================================================================================================================
     //========================================== Hooks personalizados ===============================================================================
@@ -324,7 +326,21 @@ const RoutesTransforma = ({ path }) => {
                                             <CUEventos isPreview />
                                         </div>
                                     )}
+
+                                     />
+                                 <Route
+                                    path="/transforma/prueba"
+                                    exact
+                                    component={() => (
+                                        <div
+                                            className="animate__animated animate__fadeIn"
+                                            style={{ width: "100%" }}
+                                        >
+                                            <TestPrueba />
+                                        </div>
+                                    )}
                                 />
+                            
 
                                 <Route path="*" component={PageNotFound} />
                             </Switch>

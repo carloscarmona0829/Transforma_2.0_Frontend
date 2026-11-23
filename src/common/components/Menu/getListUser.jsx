@@ -24,7 +24,8 @@ import {
     SupervisedUserCircle,
     //Report as ReportIcon,
     Engineering as EngineeringIcon,
-    Stadium as StadiumIcon
+    Stadium as StadiumIcon,
+    Build as BuildIcon
 } from "@mui/icons-material";
 
 //Hooks
@@ -205,6 +206,23 @@ const ListMenuUser = ({ toggleDrawer, movil }) => {
                 </ListItemIcon>
                 <ListItemText primary="Estadísticas" />
             </ListItem> */}
+            <ListItem
+                button
+                component={RouterLink}
+                to="/transforma/prueba"
+                selected={location.pathname === "/transforma/prueba"}
+                onClick={(e) => {
+                    if (movil) {
+                        toggleDrawer(e, false);
+                    }
+                }}
+            >
+                <ListItemIcon>
+                    <BuildIcon />
+                </ListItemIcon>
+                <ListItemText primary="Prueba" />
+            </ListItem>
+
 
             <Divider />
 
