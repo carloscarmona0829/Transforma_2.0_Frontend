@@ -21,6 +21,18 @@ import {
     useMediaQuery,
 } from "@mui/material";
 
+const INITIAL_DATA = {
+    strTipoVia: "",
+    strNumeroVia: "",
+    strLetraVia: "",
+    strComplementoVia: "",
+    strNumeroViaSecundaria: "",
+    strLetraViaSecundaria: "",
+    strComplementoViaSecundaria: "",
+    strNumeroPredio: "",
+    strComplementoDireccion: "",
+};
+
 const ModalDireccionResidencia = ({
     name,
     label,
@@ -37,17 +49,9 @@ const ModalDireccionResidencia = ({
     //========================================================================================================================
     const [openModal, setOpenModal] = useState(false);
 
-    const [data, setData] = useState({
-        strTipoVia: "",
-        strNumeroVia: "",
-        strLetraVia: "",
-        strComplementoVia: "",
-        strNumeroViaSecundaria: "",
-        strLetraViaSecundaria: "",
-        strComplementoViaSecundaria: "",
-        strNumeroPredio: "",
-        strComplementoDireccion: "",
-    });
+    const [data, setData] = useState(INITIAL_DATA);
+
+    const esColombia = strPais?.trim().toLowerCase() === "colombia";
 
     //===============================================================================================================================================
     //========================================== Hooks personalizados ===============================================================================
@@ -59,7 +63,8 @@ const ModalDireccionResidencia = ({
         control,
         formState: { errors },
         handleSubmit,
-    } = useForm({ mode: "onChange" });
+        reset,
+    } = useForm({ mode: "onChange", defaultValues: INITIAL_DATA });
 
     //========================================================================================================================
     //========================================= Funciones  ===================================================================
@@ -72,14 +77,20 @@ const ModalDireccionResidencia = ({
         setData((prevState) => ({ ...prevState, [key]: value }));
     };
 
-    const onSubmit = (data) => {
-        let strDireccion = `${data.strTipoVia} ${
-            data.strNumeroVia
-        } ${data.strLetraVia.toUpperCase()} ${data.strComplementoVia} # ${
-            data.strNumeroViaSecundaria
-        } ${data.strLetraViaSecundaria.toUpperCase()} ${
-            data.strComplementoViaSecundaria
-        } - ${data.strNumeroPredio} ${data.strComplementoDireccion}`;
+    const handleClear = () => {
+        setData(INITIAL_DATA);
+        reset(INITIAL_DATA);
+        onChange("");
+    };
+
+    const onSubmit = (formData) => {
+        let strDireccion = `${formData.strTipoVia} ${
+            formData.strNumeroVia
+        } ${formData.strLetraVia.toUpperCase()} ${formData.strComplementoVia} # ${
+            formData.strNumeroViaSecundaria
+        } ${formData.strLetraViaSecundaria.toUpperCase()} ${
+            formData.strComplementoViaSecundaria
+        } - ${formData.strNumeroPredio} ${formData.strComplementoDireccion}`;
 
         onChange(strDireccion);
         handleOpenDialog();
@@ -116,8 +127,7 @@ const ModalDireccionResidencia = ({
                   }`
                 : "";
 
-            setData((prevState) => ({
-                ...prevState,
+            const parsedData = {
                 strTipoVia: arrayString[0] ? arrayString[0] : "",
                 strNumeroVia: arrayString[1] ? arrayString[1] : "",
                 strLetraVia:
@@ -134,9 +144,15 @@ const ModalDireccionResidencia = ({
                     : "",
                 strNumeroPredio: arrayString[9 + max] ? arrayString[9 + max] : "",
                 strComplementoDireccion: strComple,
-            }));
+            };
+
+            setData(parsedData);
+            reset(parsedData);
+        } else {
+            setData(INITIAL_DATA);
+            reset(INITIAL_DATA);
         }
-    }, [value]);
+    }, [value, reset]);
 
     //========================================================================================================================
     //========================================= Renders  =====================================================================
@@ -148,14 +164,14 @@ const ModalDireccionResidencia = ({
                 required={required}
                 error={error}
                 fullWidth
-                onClick={() => (strPais === "Colombia" && !disabled ? handleOpenDialog() : null)}
+                onClick={() => (esColombia && !disabled ? handleOpenDialog() : null)}
             >
                 <FormLabel
                     htmlFor={`txt${name}`}
                     sx={{
                         position: "absolute",
                         top: "-3px",
-                        fontSize: "12px"
+                        fontSize: "12px",
                     }}
                 >
                     {label}
@@ -165,7 +181,12 @@ const ModalDireccionResidencia = ({
                     name={name}
                     value={value}
                     onChange={(e) => onChange(e)}
-                    placeholder="Haz clic para seleccionar"
+                    readOnly={esColombia}
+                    placeholder={
+                        esColombia
+                            ? "Haz clic para seleccionar"
+                            : helperText || "Digita la dirección"
+                    }
                     disabled={disabled}
                 />
                 <FormHelperText
@@ -545,6 +566,10 @@ const ModalDireccionResidencia = ({
                 </DialogContent>
 
                 <DialogActions>
+                    <Button onClick={handleClear} color="error">
+                        limpiar
+                    </Button>
+
                     <Button onClick={() => handleOpenDialog()} color="inherit">
                         cancelar
                     </Button>

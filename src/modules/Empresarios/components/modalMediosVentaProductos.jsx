@@ -162,27 +162,73 @@ const ModalMediosVetanProductos = ({
     const theme = useTheme();
     const bitMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+    // useEffect(() => {
+    //     if (value) {
+    //         let prevData = dataCheckbox;
+    //         let prevValuesCheck = valuesCheck;
+
+    //         value.forEach((value) => {
+    //             for (const key in prevData) {
+    //                 if (Object.hasOwnProperty.call(prevData, key)) {
+    //                     if (prevData[key].label === value.label) {
+    //                         prevData[key].checked = true;
+
+    //                         prevValuesCheck[prevData[key].parent] = value.value;
+    //                     }
+    //                 }
+    //             }
+    //         });
+
+    //         setDataCheckbox(prevData);
+    //         setValuesCheck(prevValuesCheck);
+    //     }
+    // }, [value, dataCheckbox, valuesCheck]);
+
     useEffect(() => {
-        if (value) {
-            let prevData = dataCheckbox;
-            let prevValuesCheck = valuesCheck;
+    setDataCheckbox((prevState) => {
+        const updatedData = {};
 
-            value.forEach((value) => {
-                for (const key in prevData) {
-                    if (Object.hasOwnProperty.call(prevData, key)) {
-                        if (prevData[key].label === value.label) {
-                            prevData[key].checked = true;
+        // 1. Creamos una copia nueva reiniciando todos los checked a false
+        for (const key in prevState) {
+            if (Object.hasOwnProperty.call(prevState, key)) {
+                updatedData[key] = {
+                    ...prevState[key],
+                    checked: false,
+                };
+            }
+        }
 
-                            prevValuesCheck[prevData[key].parent] = value.value;
+        // 2. Marcamos en true solo los que existen actualmente en la prop `value`
+        if (Array.isArray(value)) {
+            value.forEach((item) => {
+                for (const key in updatedData) {
+                    if (Object.hasOwnProperty.call(updatedData, key)) {
+                        if (updatedData[key].label === item.label) {
+                            updatedData[key].checked = true;
                         }
                     }
                 }
             });
-
-            setDataCheckbox(prevData);
-            setValuesCheck(prevValuesCheck);
         }
-    }, [value, dataCheckbox, valuesCheck]);
+
+        return updatedData;
+    });
+
+    if (Array.isArray(value)) {
+        setValuesCheck((prevValues) => {
+            const updatedValues = { ...prevValues };
+            value.forEach((item) => {
+                for (const key in dataCheckbox) {
+                    if (dataCheckbox[key].label === item.label && dataCheckbox[key].parent) {
+                        updatedValues[dataCheckbox[key].parent] = item.value || "";
+                    }
+                }
+            });
+            return updatedValues;
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [value]);
 
     return (
         <Fragment>
