@@ -416,11 +416,16 @@ const InfoEmpresa = ({
                                                     ?.message ||
                                                 "Selecciona la fecha de fundación",
                                             fullWidth: true,
+                                            required:true,
                                         },
                                     }}
                                 />
                             )}
                             control={control}
+                             rules={{
+                                required:
+                                    "Por favor, selecciona la fecha de fundación",
+                            }}
                         />
                     </Grid>
 
@@ -660,7 +665,7 @@ const InfoEmpresa = ({
                                     helperText={
                                         errors?.objInfoEmpresa?.strBarrio
                                             ?.message ||
-                                        "Selecciona el barrio/corregimiento/vereda de la empresa"
+                                        "Digita el barrio/corregimiento/vereda de la empresa"
                                     }
                                     variant="standard"
                                     fullWidth
@@ -748,6 +753,7 @@ const InfoEmpresa = ({
                                     label="Categoría de los productos"
                                     name={name}
                                     value={value}
+                                    required
                                     onChange={(e) => {
                                         onChange(e);
 
@@ -780,6 +786,10 @@ const InfoEmpresa = ({
                                 />
                             )}
                             control={control}
+                             rules={{
+                                required:
+                                    "Por favor, selecciona la categoría de los productos",
+                            }}
                         />
                     </Grid>
 
@@ -1252,6 +1262,7 @@ const InfoEmpresa = ({
                                     value={value}
                                     onChange={(value) => onChange(value)}
                                     disabled={disabled}
+                                    required
                                     error={
                                         errors?.objInfoEmpresa
                                             ?.arrFormasComercializacion
@@ -1267,6 +1278,10 @@ const InfoEmpresa = ({
                                 />
                             )}
                             control={control}
+                            rules={{
+                                required:
+                                    "Por favor, Selecciona los medios que utilice para la venta de sus productos o servicios"
+                            }}
                         />
                     </Grid>
 
